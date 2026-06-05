@@ -1,4 +1,4 @@
-# Chan Monkey Logo — Mathematical Reconstruction
+# Chan Meng — Personal Brand Logo (Mathematical Reconstruction)
 
 A reconstruction of a hand-drawn personal-brand logo (`chan-monkey-logo-black.svg`)
 — originally made of **hundreds of hand-placed points** (`L` segments), so it was
