@@ -17,7 +17,8 @@ $$\mathbf{B}(t)=(1-t)^3\,P_0+3(1-t)^2t\,C_1+3(1-t)\,t^2\,C_2+t^3\,P_3,\qquad t\i
 
 The whole logo = a set of **piecewise cubic Bézier curves** (each contour a closed
 chain), plus **two exact circles** for the eyes. Every control point lives in the
-`<path d="…C…">` data of `chan-monkey-logo-math.svg`.
+`<path d="…C…">` data of the generated SVGs in `assets/`
+(e.g. `assets/full/chan-meng-logo-black-on-white.svg`).
 
 ## 2. Coordinate system
 
@@ -74,10 +75,10 @@ $(104.6,152.6)$ and $(170.8,152.6)$, radius $16.6$.
 ## 6. Reproduce and tweak
 
 ```bash
-python build_logo.py            # read original -> write chan-monkey-logo-math.svg
+python src/build_logo.py        # read the archived original -> write all assets/
 ```
 
 No third-party dependencies. Adjust the `(step, smoothing_passes)` for any contour in
-the `TUNING` dict of `build_logo.py` to control smoothness vs. fidelity; the exact
+the `TUNING` dict of `src/build_logo.py` to control smoothness vs. fidelity; the exact
 control points all land in the output SVG, where each segment is the parametric cubic
 polynomial from Section 1.

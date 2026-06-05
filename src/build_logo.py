@@ -28,9 +28,14 @@ CHAN wordmark) but every path is a clean Bézier curve.
 """
 
 import math
+import os
 import re
 
-SRC = "chan-monkey-logo-black.svg"
+# Paths are resolved relative to the repo root (this file lives in src/), so the
+# script works no matter what the current working directory is.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.join(ROOT, "archive", "chan-meng-logo-original-handdrawn.svg")
+
 W, H = 276, 356
 BLACK = "#000000"
 WHITE = "#ffffff"
@@ -263,33 +268,26 @@ def render(C, ink=BLACK, background=WHITE, with_text=True):
     return "\n".join(out)
 
 
-# (filename, ink, background, with_text)
+# (relative path under the repo root, ink, background, with_text)
 VARIANTS = [
     # Full lockup (monkey + CHAN)
-    ("variants/chan-meng-logo-black-on-white.svg",    BLACK, WHITE, True),
-    ("variants/chan-meng-logo-white-on-black.svg",    WHITE, BLACK, True),
-    ("variants/chan-meng-logo-black-transparent.svg", BLACK, None,  True),
-    ("variants/chan-meng-logo-white-transparent.svg", WHITE, None,  True),
+    ("assets/full/chan-meng-logo-black-on-white.svg",    BLACK, WHITE, True),
+    ("assets/full/chan-meng-logo-white-on-black.svg",    WHITE, BLACK, True),
+    ("assets/full/chan-meng-logo-black-transparent.svg", BLACK, None,  True),
+    ("assets/full/chan-meng-logo-white-transparent.svg", WHITE, None,  True),
     # Monkey only (no wordmark) — for avatars, app icons, favicons
-    ("variants/chan-meng-monkey-black-on-white.svg",    BLACK, WHITE, False),
-    ("variants/chan-meng-monkey-white-on-black.svg",    WHITE, BLACK, False),
-    ("variants/chan-meng-monkey-black-transparent.svg", BLACK, None,  False),
-    ("variants/chan-meng-monkey-white-transparent.svg", WHITE, None,  False),
+    ("assets/monkey/chan-meng-monkey-black-on-white.svg",    BLACK, WHITE, False),
+    ("assets/monkey/chan-meng-monkey-white-on-black.svg",    WHITE, BLACK, False),
+    ("assets/monkey/chan-meng-monkey-black-transparent.svg", BLACK, None,  False),
+    ("assets/monkey/chan-meng-monkey-white-transparent.svg", WHITE, None,  False),
 ]
 
 
 if __name__ == "__main__":
-    import os
     C = load_contours()
-
-    # Canonical reconstruction kept at repo root (full, black on white).
-    canonical = "chan-monkey-logo-math.svg"
-    with open(canonical, "w", encoding="utf-8") as f:
-        f.write(render(C))
-    print(f"wrote {canonical}")
-
-    os.makedirs("variants", exist_ok=True)
-    for path, ink, bg, txt in VARIANTS:
+    for rel, ink, bg, txt in VARIANTS:
+        path = os.path.join(ROOT, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write(render(C, ink=ink, background=bg, with_text=txt))
-        print(f"wrote {path}")
+        print(f"wrote {rel}")
