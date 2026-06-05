@@ -234,23 +234,24 @@ def load_contours():
 
 
 # ---------------------------------------------------------------------------
-# 5. Render one variant.  The logo is two-tone: `ink` for the head/features/
-# text, `paper` for the light face + inner ears. Both tones are drawn
-# explicitly (the face is NOT a background-showthrough hole), so every variant
-# looks correct on any backing, including a transparent one.
+# 5. Render one variant.  Single-colour (`ink`) knockout design, exactly like
+# the original: the head is one even-odd path whose inner contours (the face
+# and the inner ears) are HOLES. With a solid background they show that colour;
+# with no background they are genuinely transparent — the face is see-through.
+# Eyes / nostrils / mouth / CHAN are `ink` marks painted on top.
 # ---------------------------------------------------------------------------
-def render(C, ink=BLACK, paper=WHITE, background=WHITE, with_text=True):
+def render(C, ink=BLACK, background=WHITE, with_text=True):
     vb_h = H if with_text else int(math.ceil(C["monkey_h"]))
     out = [f'<svg width="{W}" height="{vb_h}" viewBox="0 0 {W} {vb_h}" '
            f'xmlns="http://www.w3.org/2000/svg">']
     if background is not None:
         out.append(f'  <rect width="{W}" height="{vb_h}" fill="{background}"/>')
 
-    # head silhouette (solid ink) -> light face + inner ears (paper) on top
-    out.append(path_el([C["head"]], ink, note="head silhouette"))
-    out.append(path_el(C["face"], paper, note="face + inner ears"))
+    # head silhouette with the face + inner ears knocked out (even-odd holes)
+    out.append(path_el([C["head"]] + C["face"], ink, evenodd=True,
+                       note="head silhouette with see-through face/ear holes"))
 
-    # ink features
+    # ink features sitting inside the (transparent) face
     for cx, cy, r in C["eyes"]:
         out.append(circle_el(cx, cy, r, ink, note="eye"))
     out.append(path_el(C["features"], ink, note="nostrils + mouth"))
@@ -262,18 +263,18 @@ def render(C, ink=BLACK, paper=WHITE, background=WHITE, with_text=True):
     return "\n".join(out)
 
 
-# (filename, ink, paper, background, with_text)
+# (filename, ink, background, with_text)
 VARIANTS = [
     # Full lockup (monkey + CHAN)
-    ("variants/chan-meng-logo-black-on-white.svg",    BLACK, WHITE, WHITE, True),
-    ("variants/chan-meng-logo-white-on-black.svg",    WHITE, BLACK, BLACK, True),
-    ("variants/chan-meng-logo-black-transparent.svg", BLACK, WHITE, None,  True),
-    ("variants/chan-meng-logo-white-transparent.svg", WHITE, BLACK, None,  True),
+    ("variants/chan-meng-logo-black-on-white.svg",    BLACK, WHITE, True),
+    ("variants/chan-meng-logo-white-on-black.svg",    WHITE, BLACK, True),
+    ("variants/chan-meng-logo-black-transparent.svg", BLACK, None,  True),
+    ("variants/chan-meng-logo-white-transparent.svg", WHITE, None,  True),
     # Monkey only (no wordmark) — for avatars, app icons, favicons
-    ("variants/chan-meng-monkey-black-on-white.svg",    BLACK, WHITE, WHITE, False),
-    ("variants/chan-meng-monkey-white-on-black.svg",    WHITE, BLACK, BLACK, False),
-    ("variants/chan-meng-monkey-black-transparent.svg", BLACK, WHITE, None,  False),
-    ("variants/chan-meng-monkey-white-transparent.svg", WHITE, BLACK, None,  False),
+    ("variants/chan-meng-monkey-black-on-white.svg",    BLACK, WHITE, False),
+    ("variants/chan-meng-monkey-white-on-black.svg",    WHITE, BLACK, False),
+    ("variants/chan-meng-monkey-black-transparent.svg", BLACK, None,  False),
+    ("variants/chan-meng-monkey-white-transparent.svg", WHITE, None,  False),
 ]
 
 
@@ -288,7 +289,7 @@ if __name__ == "__main__":
     print(f"wrote {canonical}")
 
     os.makedirs("variants", exist_ok=True)
-    for path, ink, paper, bg, txt in VARIANTS:
+    for path, ink, bg, txt in VARIANTS:
         with open(path, "w", encoding="utf-8") as f:
-            f.write(render(C, ink=ink, paper=paper, background=bg, with_text=txt))
+            f.write(render(C, ink=ink, background=bg, with_text=txt))
         print(f"wrote {path}")

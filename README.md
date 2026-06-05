@@ -19,10 +19,11 @@ infinitely scalable, and parametrically tweakable.
 
 Ready-to-use exports live in [`variants/`](variants) — full lockup (monkey + CHAN)
 and monkey-only (cropped, for avatars / app icons / favicons), each in four color
-schemes. Every variant is **self-contained two-tone**: the light face is drawn
-explicitly (not a background show-through), so even the transparent versions read
-correctly on any backing — black variants carry a white face, white variants carry
-a black face.
+schemes. Each variant is a **single-color knockout**: the head is one ink colour and
+the face + inner ears are **transparent holes**. On the solid-background versions
+those holes show the background colour; on the transparent versions they are
+genuinely see-through, so the backdrop shows through the monkey's face. Use the
+**black** variants on light backgrounds and the **white** variants on dark ones.
 
 ![all variants on a checkerboard](variants-preview.png)
 
