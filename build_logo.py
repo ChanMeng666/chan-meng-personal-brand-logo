@@ -209,9 +209,9 @@ def circle_el(cx, cy, r, fill, note=""):
 
 
 # ---------------------------------------------------------------------------
-# 4. Build
+# 4. Fit every contour once (shared by all variants)
 # ---------------------------------------------------------------------------
-def build():
+def load_contours():
     svg = open(SRC, encoding="utf-8").read()
     d1, d2 = re.findall(r'<path d="(.*?)"', svg, re.S)[:2]
     head, facemask, ear_r, ear_l = tokenize_path(d1)
@@ -221,40 +221,74 @@ def build():
     def F(pts, key):
         return fit_contour(pts, *TUNING[key])
 
-    out = [f'<svg width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
-           f'fill="none" xmlns="http://www.w3.org/2000/svg">',
-           f'  <rect width="{W}" height="{H}" fill="{WHITE}"/>']
+    monkey_h = max(p[1] for p in head)          # tight bottom of the chin
+    return {
+        "head": F(head, "head"),
+        "face": [F(facemask, "facemask"), F(ear_r, "ear"), F(ear_l, "ear")],
+        "eyes": [fit_circle(eye_l), fit_circle(eye_r)],
+        "features": [F(nos_l, "nostril"), F(nos_r, "nostril"), F(mouth, "mouth")],
+        "chan": [F(gC, "letter"), F(gH, "letter"), F(gA, "letter"),
+                 F(gA_hole, "letter"), F(gN, "letter")],
+        "monkey_h": monkey_h,
+    }
 
-    # Black head with white face + ear holes (even-odd fill, like the original)
-    out.append(path_el(
-        [F(head, "head"), F(facemask, "facemask"),
-         F(ear_r, "ear"), F(ear_l, "ear")],
-        BLACK, evenodd=True, note="head silhouette + white face/ear holes"))
 
-    # Eyes are exact circles in the original -> emit as perfect circles.
-    for c in (eye_l, eye_r):
-        out.append(circle_el(*fit_circle(c), fill=BLACK, note="eye (exact circle)"))
+# ---------------------------------------------------------------------------
+# 5. Render one variant.  The logo is two-tone: `ink` for the head/features/
+# text, `paper` for the light face + inner ears. Both tones are drawn
+# explicitly (the face is NOT a background-showthrough hole), so every variant
+# looks correct on any backing, including a transparent one.
+# ---------------------------------------------------------------------------
+def render(C, ink=BLACK, paper=WHITE, background=WHITE, with_text=True):
+    vb_h = H if with_text else int(math.ceil(C["monkey_h"]))
+    out = [f'<svg width="{W}" height="{vb_h}" viewBox="0 0 {W} {vb_h}" '
+           f'xmlns="http://www.w3.org/2000/svg">']
+    if background is not None:
+        out.append(f'  <rect width="{W}" height="{vb_h}" fill="{background}"/>')
 
-    # Black nostrils + mouth (smooth Bezier curves)
-    out.append(path_el(
-        [F(nos_l, "nostril"), F(nos_r, "nostril"), F(mouth, "mouth")],
-        BLACK, note="nostrils, mouth"))
+    # head silhouette (solid ink) -> light face + inner ears (paper) on top
+    out.append(path_el([C["head"]], ink, note="head silhouette"))
+    out.append(path_el(C["face"], paper, note="face + inner ears"))
 
-    # CHAN wordmark (the A carries a counter -> even-odd)
-    out.append(path_el(
-        [F(gC, "letter"), F(gH, "letter"), F(gA, "letter"),
-         F(gA_hole, "letter"), F(gN, "letter")],
-        BLACK, evenodd=True, note="CHAN wordmark"))
+    # ink features
+    for cx, cy, r in C["eyes"]:
+        out.append(circle_el(cx, cy, r, ink, note="eye"))
+    out.append(path_el(C["features"], ink, note="nostrils + mouth"))
+
+    if with_text:
+        out.append(path_el(C["chan"], ink, evenodd=True, note="CHAN wordmark"))
 
     out.append("</svg>")
     return "\n".join(out)
 
 
+# (filename, ink, paper, background, with_text)
+VARIANTS = [
+    # Full lockup (monkey + CHAN)
+    ("variants/chan-meng-logo-black-on-white.svg",    BLACK, WHITE, WHITE, True),
+    ("variants/chan-meng-logo-white-on-black.svg",    WHITE, BLACK, BLACK, True),
+    ("variants/chan-meng-logo-black-transparent.svg", BLACK, WHITE, None,  True),
+    ("variants/chan-meng-logo-white-transparent.svg", WHITE, BLACK, None,  True),
+    # Monkey only (no wordmark) — for avatars, app icons, favicons
+    ("variants/chan-meng-monkey-black-on-white.svg",    BLACK, WHITE, WHITE, False),
+    ("variants/chan-meng-monkey-white-on-black.svg",    WHITE, BLACK, BLACK, False),
+    ("variants/chan-meng-monkey-black-transparent.svg", BLACK, WHITE, None,  False),
+    ("variants/chan-meng-monkey-white-transparent.svg", WHITE, BLACK, None,  False),
+]
+
+
 if __name__ == "__main__":
-    import sys
-    out_path = sys.argv[1] if len(sys.argv) > 1 else "chan-monkey-logo-math.svg"
-    svg = build()
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(svg)
-    n = svg.count("C")
-    print(f"wrote {out_path} ({len(svg)} bytes, ~{n} cubic Bezier segments)")
+    import os
+    C = load_contours()
+
+    # Canonical reconstruction kept at repo root (full, black on white).
+    canonical = "chan-monkey-logo-math.svg"
+    with open(canonical, "w", encoding="utf-8") as f:
+        f.write(render(C))
+    print(f"wrote {canonical}")
+
+    os.makedirs("variants", exist_ok=True)
+    for path, ink, paper, bg, txt in VARIANTS:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(render(C, ink=ink, paper=paper, background=bg, with_text=txt))
+        print(f"wrote {path}")
