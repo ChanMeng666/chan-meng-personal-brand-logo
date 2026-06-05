@@ -1,0 +1,20 @@
+{
+  "name": "chan-meng-logo",
+  "version": "1.0.0",
+  "description": "Raster/icon export toolchain for the Chan Meng personal-brand logo (companion to src/build_logo.py).",
+  "scripts": {
+    "rasterize": "node src/rasterize.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChanMeng666/chan-meng-personal-brand-logo.git"
+  },
+  "author": "Chan Meng <chanmeng.dev@gmail.com>",
+  "license": "MIT",
+  "type": "commonjs",
+  "homepage": "https://github.com/ChanMeng666/chan-meng-personal-brand-logo#readme",
+  "devDependencies": {
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
+  }
+}
