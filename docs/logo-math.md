@@ -72,7 +72,65 @@ face, inner ears, the counter of the letter A).
 Total ≈ **724 cubic Bézier segments + 2 circles**. Eye centers are
 $(104.6,152.6)$ and $(170.8,152.6)$, radius $16.6$.
 
-## 6. Reproduce and tweak
+## 6. Animated variants (`assets/anime/`)
+
+> This section states the contract. For the full build guide — patterns, geometry probing,
+> the verification harness and the failure gallery — see
+> [`animating-the-mark.md`](animating-the-mark.md).
+
+The two animated files are hand-maintained, not generated. Three invariants keep them
+honest, and any edit must preserve all three:
+
+1. **The base nodes are byte-identical** to
+   `assets/monkey/chan-meng-monkey-black-transparent.svg`: the even-odd head path, the
+   `<g class="cv-blink-1">` eye group, and the nostrils+mouth path, in that order. Every
+   added element is a *sibling*, never a modification.
+2. **No new bare `<path>` / `<circle>` / `<ellipse>` may be a direct child of `<svg>`.**
+   New content goes inside a `<g>` or `<defs>`. `chan-monkey-live.svg` gates the base mouth
+   with the structural selector `svg > path:nth-of-type(2)`, which silently retargets if
+   this rule is broken. (The base nodes are gated purely from CSS, which is how they can
+   stay byte-identical while still being animated.)
+3. **Every overlay group's static, un-animated state is `opacity: 0`**, so the
+   `@media (prefers-reduced-motion: reduce) { * { animation: none !important } }` fallback
+   leaves exactly the neutral mark.
+
+`chan-monkey-live.svg` runs one master loop of $D = 100\text{ s}$ (`linear`, `infinite`).
+That value is chosen so $1\text{ s} = 1\,\%$ — every percentage in the stylesheet is simply
+the second at which it fires, which makes the fifteen interlocking gate keyframes readable
+and checkable by hand. It is divided into four 25 s seasonal acts, each holding two 8.5 s
+expressions separated by neutral gaps:
+
+| Act | 0–2.5 s | 2.5–11 s | 11–14 s | 14–22.5 s | 22.5–25 s |
+|---|---|---|---|---|---|
+| spring / summer / autumn / winter | neutral | expression A | neutral | expression B | neutral |
+
+Act boundaries fall on 25 / 50 / 75 %, where the seasonal particle groups cross-dissolve over
+1 s. The pacing is intentionally unhurried: a visitor should be able to watch for a minute
+without the loop becoming obvious.
+
+The original 5 s blink is left untouched and layered on as a second animation on the same
+element — legal only because the blink animates `transform` while the new gate animates
+`opacity`. Its blinks land at $t = 4.8 + 5k$ s. Those that fall inside a window where the
+base eyes are gated off are simply invisible; the ones that land in a neutral gap, or inside
+the two windows that keep the base eyes (😅 sweat and 🤔 thinking), read as ordinary blinking
+and are left in deliberately.
+
+Two geometric facts constrain where facial overlays may sit, both measured from the fitted
+outline rather than assumed:
+
+- The face hole is **not** an oval — a forehead wedge splits it into two lobes above
+  $y \approx 137.5$ (at $y = 122$ they span $x \in [99.0, 115.6]$ and $[160.4, 177.1]$), so
+  nothing may occupy $x \in [133, 142]$ above $y = 138$.
+- The hole has a **cheek waist at $y \approx 183$**, where its left edge reaches $x = 91.6$.
+
+Colour appears only in the seasonal particles, the winter props and the 😅 sweat drop,
+declared as CSS custom
+properties on the `svg` selector and applied through classes (`var()` inside a presentation
+attribute is not portable). Particles use a three-level nesting — static `transform`
+attribute, then a fall group, then a spin node — because a CSS `transform` overrides the
+`transform` presentation attribute on the same element.
+
+## 7. Reproduce and tweak
 
 ```bash
 python src/build_logo.py        # read the archived original -> write all assets/
