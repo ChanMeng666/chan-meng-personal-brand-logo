@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Raster/icon export toolchain for the Chan Meng personal-brand logo (companion to src/build_logo.py).",
   "scripts": {
-    "rasterize": "node src/rasterize.js"
+    "rasterize": "node src/rasterize.js",
+    "build:on-white": "node src/build-on-white.js"
   },
   "repository": {
     "type": "git",
