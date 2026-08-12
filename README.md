@@ -47,7 +47,10 @@ with no JavaScript and no external dependencies — drop them in with `<img src=
 they just play.
 
 <p align="center">
-  <img src="assets/anime/chan-monkey-live.svg" width="240" alt="Chan monkey cycling through expressions and seasons">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/anime/chan-monkey-live-on-white.svg">
+    <img src="assets/anime/chan-monkey-live.svg" width="240" alt="Chan monkey cycling through expressions and seasons">
+  </picture>
 </p>
 
 | File | What it does | Loop |
@@ -69,6 +72,22 @@ case of the on-white variant.
 brings its own background instead: one file that reads correctly in both themes, at the
 cost of a visible card. The transparent original is still the right choice anywhere you
 control the backdrop.
+
+If you control the surrounding **markup** rather than just the URL, you have a second
+option: the missing hook exists in the host page even though it does not exist inside an
+`<img>`-loaded SVG. The preview above uses it — `<picture>` with a
+`prefers-color-scheme: dark` source, which GitHub honours in Markdown — so light-theme
+readers get the transparent original and dark-theme readers get the card:
+
+```html
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/anime/chan-monkey-live-on-white.svg">
+  <img src="assets/anime/chan-monkey-live.svg" width="240" alt="…">
+</picture>
+```
+
+Reach for `chan-monkey-live-on-white.svg` on its own when all you can hand someone is a
+single URL — a bare `<img src>`, a profile field, a chat embed, a badge slot.
 
 The pacing is deliberately slow — 25 s per season, 8.5 s per expression — so the mark stays
 worth watching for a while instead of visibly looping.
