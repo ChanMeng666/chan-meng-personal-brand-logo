@@ -952,6 +952,11 @@ Winter props span both winter windows (76–98.5 s). Seasons occupy 0–25 / 25�
 
 ## See also
 
+- [svg-animation-studio](https://github.com/ChanMeng666/svg-animation-studio) — where animated SVGs get
+  built. This guide is kept there too, as `docs/animating-a-mark.md`, beside
+  `docs/product-cards.md` (a product at work in one SVG) and the code that automates
+  the master clock (`lib/timeline.js`) and the `<img>` and reduced-motion steps of the
+  harness in section 11 (`scripts/capture-frames.mjs`).
 - [`logo-math.md`](logo-math.md) — how the mark's Bézier geometry is derived, and the
   animation invariants in their canonical short form.
 - [`../assets/anime/chan-monkey-live.svg`](../assets/anime/chan-monkey-live.svg) — the
